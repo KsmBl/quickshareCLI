@@ -99,12 +99,21 @@ def handleDirFile(dirPath, fileName):
 
 		return send_from_directory(dirEntry['path'], fileName, as_attachment=True)
 
+
 @app.route('/listRoots', methods=['GET'])
 def listRoots():
 	rootsBase = "/srv"
+	allDirs = []
 	try:
-		dirs = [d for d in os.listdir(rootsBase) if os.path.isdir(os.path.join(rootsBase, d))]
-		return {"roots": dirs}
+		for disk in os.listdir(rootsBase):
+			diskPath = os.path.join(rootsBase, disk)
+			if os.path.isdir(diskPath):
+				for sub in os.listdir(diskPath):
+					subPath = os.path.join(diskPath, sub)
+					if os.path.isdir(subPath):
+						relPath = os.path.relpath(subPath, rootsBase)
+						allDirs.append(relPath)
+		return {"roots": allDirs}
 	except Exception as e:
 		return {"error": str(e)}, 500
 
