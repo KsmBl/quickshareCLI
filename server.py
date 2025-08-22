@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from flask import Flask, send_from_directory, abort, request, render_template_string
+from flask_cors import CORS
 import threading
 import string
 import random
@@ -11,6 +12,7 @@ HOST_OUTSIDE = "0.0.0.0"
 PORT_OUTSIDE = 8080
 
 app = Flask(__name__)
+CORS(app)
 
 entries = {}
 lock = threading.Lock()
@@ -97,6 +99,15 @@ def handleDirFile(dirPath, fileName):
 
 		return send_from_directory(dirEntry['path'], fileName, as_attachment=True)
 
+@app.route('/listRoots', methods=['GET'])
+def listRoots():
+	rootsBase = "/srv"
+	try:
+		dirs = [d for d in os.listdir(rootsBase) if os.path.isdir(os.path.join(rootsBase, d))]
+		return {"roots": dirs}
+	except Exception as e:
+		return {"error": str(e)}, 500
+
+
 if __name__ == '__main__':
 	app.run(host=HOST_OUTSIDE, port=PORT_OUTSIDE, threaded=True)
-
